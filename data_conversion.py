@@ -16,6 +16,8 @@ import re
 
 import pandas as pd
 
+# Note: AiM exports csv files in "ISO-8859-1" format
+AIM_FILE_ENCODING = "ISO-8859-1"
 
 @dataclass
 class DataLog:
@@ -24,7 +26,7 @@ class DataLog:
 
     >>> dl = DataLog('sample_data/YamahaR6.csv')
     >>> dl.metadata['Duration']
-    '542.771'
+    '558.356'
     """
     filepath: str           # String with the path to the datafile to be converted
     dataframe: pd.DataFrame = pd.DataFrame()
@@ -44,8 +46,7 @@ class DataLog:
         skiprows = self.metadata['metadata_row_nums'] + self.metadata['header_row_nums']
         skiprows.remove(self.metadata['headings_row_num'])
         # skiprows.remove(metadata['units_row_num'])
-        # Note: AiM exports csv files in "ISO-8859-1" format
-        self.dataframe = pd.read_csv(self.filepath, skiprows=skiprows, encoding="ISO-8859-1")
+        self.dataframe = pd.read_csv(self.filepath, skiprows=skiprows, encoding=AIM_FILE_ENCODING)
 
         self._parse_aim_laptime_and_totaltime()
 
@@ -68,7 +69,7 @@ class DataLog:
             lap_start_idx = lap_start_index[ii]
             lap_end_idx = lap_end_index[ii]
             self.dataframe.loc[
-                lap_start_idx:lap_end_idx, 'Total Time'
+            lap_start_idx:lap_end_idx, 'Total Time'
             ] = total_lap_time + self.dataframe.loc[lap_start_idx:lap_end_idx:, 'Time']
             total_lap_time = self.dataframe.loc[lap_end_idx, 'Total Time']
 
@@ -83,7 +84,7 @@ class DataLog:
         reading_headers = False
         header_rows = []
         header_row_nums = []
-        with open(self.filepath) as f:
+        with open(self.filepath, encoding=AIM_FILE_ENCODING) as f:
             ln = f.readline()
             while ln:
                 if reading_metadata:
@@ -125,3 +126,4 @@ class DataLog:
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
+
